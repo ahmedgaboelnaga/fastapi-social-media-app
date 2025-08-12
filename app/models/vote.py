@@ -18,4 +18,11 @@ class Vote(Base):
     post_id = Column(
         Integer, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True
     )
-    type = Column(Enum(VoteType, name="votetype"), nullable=False)
+    type = Column(
+        Enum(
+            VoteType,
+            name="votetype",
+            values_callable=lambda obj: [e.value for e in obj],
+        ),
+        nullable=False,
+    )  # type: ignore

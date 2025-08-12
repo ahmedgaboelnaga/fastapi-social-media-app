@@ -50,24 +50,6 @@ async def get_my_posts(
     return posts
 
 
-@router.get("/{user_id}", response_model=List[PostWithVote])
-async def get_user_posts(
-    user_id: int,
-    db: SessionDep,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    # return current_user.posts
-    posts = (
-        db.query(Post, func.count(Vote.type).label("votes"))
-        .outerjoin(Vote, Vote.post_id == Post.id)
-        .filter(Post.owner_id == user_id)
-        .group_by(Post.id)
-        .order_by(desc(Post.created_at))
-        .all()
-    )
-    return posts
-
-
 @router.get("/latest", response_model=PostWithVote)
 async def get_latest_post(
     db: SessionDep,
@@ -107,6 +89,24 @@ async def get_post(
             detail=f"Post with id: {post_id} was not found",
         )
     return post
+
+
+@router.get("/user/{user_id}", response_model=List[PostWithVote])
+async def get_user_posts(
+    user_id: int,
+    db: SessionDep,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    # return current_user.posts
+    posts = (
+        db.query(Post, func.count(Vote.type).label("votes"))
+        .outerjoin(Vote, Vote.post_id == Post.id)
+        .filter(Post.owner_id == user_id)
+        .group_by(Post.id)
+        .order_by(desc(Post.created_at))
+        .all()
+    )
+    return posts
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
