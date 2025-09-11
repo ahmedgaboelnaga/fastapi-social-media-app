@@ -1,7 +1,8 @@
-from sqlalchemy import TIMESTAMP, Column, Integer, String, text
+from sqlalchemy import TIMESTAMP, Column, Integer, String
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
-from app.core import Base
+from . import Base
 
 
 class User(Base):
@@ -11,7 +12,7 @@ class User(Base):
     email = Column(String(255), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
     )
 
     posts = relationship("Post", back_populates="owner")

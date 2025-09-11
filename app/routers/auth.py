@@ -9,10 +9,10 @@ from app.utils import authenticate_user
 from app.models import User
 
 
-router = APIRouter(tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post("/auth", response_model=Token)
+@router.post("", response_model=Token)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: SessionDep
 ) -> Token:

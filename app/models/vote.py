@@ -1,7 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, Enum
 import enum
 
-from app.core import Base
+from . import Base
 
 
 class VoteType(str, enum.Enum):
@@ -22,7 +22,7 @@ class Vote(Base):
         Enum(
             VoteType,
             name="votetype",
-            values_callable=lambda obj: [e.value for e in obj],
+            values_callable=lambda obj: [e.value for e in obj],  # type: ignore
         ),
         nullable=False,
-    )  # type: ignore
+    )

@@ -1,7 +1,8 @@
 from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, Boolean, text
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
-from app.core import Base
+from . import Base
 
 
 class Post(Base):
@@ -15,7 +16,7 @@ class Post(Base):
     )
     rating = Column(Integer, nullable=True)
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
     )
     owner_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
