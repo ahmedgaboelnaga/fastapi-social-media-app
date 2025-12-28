@@ -1,11 +1,11 @@
 from pydantic import BaseModel
-from enum import Enum
+from enum import IntEnum
 
 
-class VoteAction(str, Enum):
-    UPVOTE = "upvote"
-    DOWNVOTE = "downvote"
-    REMOVE = "remove"
+class VoteAction(IntEnum):
+    UPVOTE = 1
+    DOWNVOTE = 2
+    REMOVE = 0
 
 
 class VoteCreate(BaseModel):

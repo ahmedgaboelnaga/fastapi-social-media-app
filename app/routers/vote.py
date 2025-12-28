@@ -15,8 +15,9 @@ async def vote(
     db: SessionDep,
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> VoteResponse:
-    post_exists = db.query(Post).filter(Post.id == vote.post_id).first()
-    if not post_exists:
+    post_query = db.query(Post).filter(Post.id == vote.post_id)
+    post = post_query.first()
+    if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Post with id {vote.post_id} does not exist",
@@ -24,36 +25,51 @@ async def vote(
 
     vote_query = db.query(Vote).filter_by(post_id=vote.post_id, user_id=current_user.id)
     found_vote = vote_query.first()
+
     if vote.action == VoteAction.UPVOTE:
-        if found_vote and str(found_vote.type) == VoteAction.UPVOTE:
+        # Check if already upvoted
+        if found_vote and found_vote.type == 1:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"User {current_user.id} already upvoted on post with id {vote.post_id}.",
             )
         if found_vote:
+            # Update existing vote (was downvote, now upvote)
             vote_query.update(
-                {"type": VoteAction.UPVOTE}, synchronize_session="evaluate"
+                {"type": 1},
+                synchronize_session="evaluate",
             )
         else:
+            # Create new upvote
             new_vote: Vote = Vote(
-                user_id=current_user.id, post_id=vote.post_id, type=VoteAction.UPVOTE
+                user_id=current_user.id,
+                post_id=vote.post_id,
+                type=1,
             )
             db.add(new_vote)
+
     elif vote.action == VoteAction.DOWNVOTE:
-        if found_vote and str(found_vote.type) == VoteAction.DOWNVOTE:
+        # Check if already downvoted
+        if found_vote and found_vote.type == 2:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"User {current_user.id} already down_voted on post with id {vote.post_id}.",
+                detail=f"User {current_user.id} already downvoted on post with id {vote.post_id}.",
             )
         if found_vote:
+            # Update existing vote (was upvote, now downvote)
             vote_query.update(
-                {"type": VoteAction.DOWNVOTE}, synchronize_session="evaluate"
+                {"type": 2},
+                synchronize_session="evaluate",
             )
         else:
+            # Create new downvote
             new_downvote: Vote = Vote(
-                user_id=current_user.id, post_id=vote.post_id, type=VoteAction.DOWNVOTE
+                user_id=current_user.id,
+                post_id=vote.post_id,
+                type=2,
             )
             db.add(new_downvote)
+
     elif vote.action == VoteAction.REMOVE:
         if not found_vote:
             raise HTTPException(
@@ -66,4 +82,8 @@ async def vote(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    return VoteResponse(message=f"Vote {vote.action} successful")
+
+    action_messages = {1: "upvote", 2: "downvote", 0: "remove"}
+    return VoteResponse(
+        message=f"Vote {action_messages.get(vote.action, 'action')} successful"
+    )
