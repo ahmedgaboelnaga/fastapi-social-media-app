@@ -1,52 +1,43 @@
-# FastAPI Social Media App
+# FastAPI Social Media API
 
-A modern, production-ready social media REST API built with FastAPI, featuring user authentication, posts, and voting functionality.
+A high-performance, production-ready social media REST API built with **FastAPI**. It includes comprehensive features for user management, posting, and voting, designed for scalability and modern best practices.
 
-## 🌐 Live Demo
+## 🌐 Live API & Documentation
 
-The API is deployed and accessible at:
-- **Base URL**: http://172.161.93.35/
-- **API Documentation**: http://172.161.93.35/docs
-- **Alternative Docs**: http://172.161.93.35/redoc
+- **API Documentation (Swagger UI)**: http://172.161.93.35/api/docs
+- **Alternative Docs (ReDoc)**: http://172.161.93.35/api/redoc
+- **Web Interface**: http://172.161.93.35/
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **User Management**
-  - User registration and authentication
-  - JWT-based authentication with OAuth2
-  - Secure password hashing with bcrypt
-  
-- **Posts**
-  - Create, read, update, and delete posts
-  - Search posts by title
-  - Pagination support (limit and skip)
-  - Owned posts management
-  
+- **User Authentication & Security**
+  - Secure registration and login flows.
+  - OAuth2 with JWT (JSON Web Tokens) for stateless authentication.
+  - Industry-standard password hashing with Bcrypt.
+  - Role-based permissions (ownership checks).
+
+- **Post Management**
+  - Full CRUD capabilities (Create, Read, Update, Delete).
+  - Advanced querying with pagination (limit/offset) and search filters.
+  - Optimized database queries using SQLAlchemy relationships.
+
 - **Voting System**
-  - Upvote and downvote posts
-  - Vote counts aggregation
-  - One vote per user per post
+  - Reddit-style upvote/downvote logic.
+  - Real-time vote aggregation and consistency checks.
+  - Prevention of duplicate voting.
 
-- **Additional Features**
-  - CORS middleware configured
-  - Database migrations with Alembic
-  - Comprehensive test suite with pytest
-  - Docker support for containerization
-  - CI/CD pipeline with GitHub Actions
-  - Type hints and Pydantic validation
+- **Frontend Interface (Bonus)**
+  - A clean, Jinja2-based web interface is included to demonstrate API consumption.
+  - Features a modern, responsive design for testing the backend logic visually.
 
 ## 🛠️ Tech Stack
 
-- **Framework**: FastAPI 0.116.1
-- **Database**: PostgreSQL with SQLAlchemy ORM
-- **Database Driver**: Psycopg 3.2.9
-- **Authentication**: OAuth2 with JWT (python-jose)
-- **Password Hashing**: Passlib with bcrypt
-- **Migrations**: Alembic 1.16.4
-- **Testing**: Pytest 8.4.1
-- **Package Manager**: UV (modern Python package manager)
-- **Server**: Uvicorn/Gunicorn
-- **Python Version**: 3.11+
+- **Core Framework**: FastAPI 0.116.1 (Python 3.11+)
+- **Database**: PostgreSQL
+- **ORM**: SQLAlchemy
+- **Migrations**: Alembic
+- **Validation**: Pydantic
+- **Testing**: Pytest & Docker
 
 ## 📋 Prerequisites
 
@@ -178,8 +169,8 @@ The test suite uses a separate test database (`fastapi_db_test`) that is automat
 
 Once the server is running, visit:
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: http://localhost:8000/api/docs
+- **ReDoc**: http://localhost:8000/api/redoc
 
 ### Main Endpoints
 
@@ -251,28 +242,23 @@ uv run alembic downgrade -1
 ├── app/
 │   ├── __init__.py
 │   ├── main.py              # FastAPI application entry point
-│   ├── core/
-│   │   ├── config.py        # Configuration and settings
-│   │   ├── database.py      # Database connection and session
-│   │   ├── db_driver.py     # Database driver configuration
-│   │   └── oauth2.py        # OAuth2 and JWT logic
+│   ├── core/                # Core configuration & db setup
 │   ├── models/              # SQLAlchemy models
-│   │   ├── post.py
-│   │   ├── user.py
-│   │   └── vote.py
 │   ├── routers/             # API route handlers
-│   │   ├── auth.py
-│   │   ├── post.py
-│   │   ├── user.py
-│   │   └── vote.py
 │   ├── schemas/             # Pydantic schemas
-│   │   ├── post.py
-│   │   ├── token.py
-│   │   ├── user.py
-│   │   └── vote.py
 │   └── utils/               # Utility functions
-│       ├── oauth.py
-│       └── security.py
+├── static/                  # Static assets
+│   ├── css/
+│   │   └── style.css        # Main stylesheet (Variables, Theming)
+│   └── js/
+│       └── main.js          # Frontend logic (Auth, API calls, DOM)
+├── templates/               # Jinja2 HTML Templates
+│   ├── base.html            # Layout template
+│   ├── home.html            # Feed & Index
+│   ├── login.html
+│   ├── register.html
+│   ├── profile.html
+│   └── my_posts.html
 ├── alembic/                 # Database migrations
 ├── tests/                   # Test suite
 │   ├── conftest.py          # Pytest fixtures

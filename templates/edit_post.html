@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post - FastAPI Social Media{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-container {
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+    .edit-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 2rem;
+    }
+    .edit-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .edit-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 1rem;
+    }
+    .btn-group {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <div class="edit-card">
+        <div class="edit-header">
+            <h1 class="edit-title">Edit Post</h1>
+        </div>
+        
+        <form id="edit-post-form" onsubmit="handleEditPost(event)">
+            <div class="form-group">
+                <label for="title" class="form-label">Title</label>
+                <input 
+                    type="text" 
+                    id="title" 
+                    name="title"
+                    class="form-control" 
+                    placeholder="Enter post title"
+                    required
+                    maxlength="200"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="content" class="form-label">Content</label>
+                <textarea 
+                    id="content" 
+                    name="content"
+                    class="form-control" 
+                    placeholder="What's on your mind?"
+                    required
+                    rows="8"
+                    style="font-family: inherit; resize: vertical;"
+                ></textarea>
+            </div>
+
+            <div class="btn-group">
+                <a href="/" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Post</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let postId = null;
+
+// Check if user is logged in
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!isAuthenticated()) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Get post ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    postId = urlParams.get('id');
+    
+    if (!postId) {
+        showAlert('No post ID provided', 'error');
+        setTimeout(() => window.location.href = '/', 1500);
+        return;
+    }
+
+    // Load post data
+    await loadPost();
+});
+
+async function loadPost() {
+    try {
+        const response = await apiRequest(`/posts/${postId}`);
+        if (response.ok) {
+            const data = await response.json();
+            // The API returns nested Post object
+            const post = data.Post || data; 
+            document.getElementById('title').value = post.title;
+            document.getElementById('content').value = post.content;
+        } else {
+            showAlert('Failed to load post', 'error');
+            setTimeout(() => window.location.href = '/', 1000);
+        }
+    } catch (error) {
+        console.error(error);
+        showAlert('Failed to load post', 'error');
+    }
+}
+
+async function handleEditPost(event) {
+    event.preventDefault();
+    
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+    
+    try {
+        const response = await apiRequest(`/posts/${postId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ title, content, published: true })
+        });
+        
+        if (response.ok) {
+            showAlert('Post updated successfully', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        } else {
+            const error = await response.json();
+            showAlert(error.detail || 'Failed to update post', 'error');
+        }
+    } catch (error) {
+        showAlert('Failed to update post', 'error');
+    }
+}
+</script>
+{% endblock %}

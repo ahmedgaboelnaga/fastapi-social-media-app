@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FastAPI Social Media{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav>
+        <div class="container nav-container">
+            <a href="/" class="nav-brand">📱 Social Media</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li id="nav-my-posts" class="hidden"><a href="/my-posts">My Posts</a></li>
+                <li id="nav-auth-links">
+                    <a href="/login" id="nav-login">Login</a>
+                    <a href="/register" id="nav-register">Register</a>
+                </li>
+                <li id="nav-user" class="hidden">
+                    <div class="nav-user">
+                        <a href="/profile" class="nav-profile-link" title="My Profile" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-primary); font-weight: 600;">
+                            <span style="font-size: 20px;">👤</span>
+                            <span id="user-email" class="user-email"></span>
+                        </a>
+                        <button class="btn btn-sm btn-secondary" onclick="logout()" style="margin-left: 10px;">Logout</button>
+                    </div>
+                </li>
+                <li>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+    <script>
+        // Initialize auth state on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateNavigation();
+        });
+    </script>
+</body>
+</html>

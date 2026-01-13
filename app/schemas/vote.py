@@ -15,3 +15,8 @@ class VoteCreate(BaseModel):
 
 class VoteResponse(BaseModel):
     message: str
+
+
+class VoteOut(BaseModel):
+    post_id: int
+    type: int

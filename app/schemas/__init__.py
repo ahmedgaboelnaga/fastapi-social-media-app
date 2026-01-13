@@ -1,7 +1,7 @@
 from .post import PostCreate, PostResponse, PostWithVote
 from .user import UserCreate, UserResponse
 from .token import Token, TokenData
-from .vote import VoteAction, VoteCreate, VoteResponse
+from .vote import VoteAction, VoteCreate, VoteResponse, VoteOut
 
 __all__ = [
     "PostCreate",
@@ -14,4 +14,5 @@ __all__ = [
     "VoteAction",
     "VoteCreate",
     "VoteResponse",
+    "VoteOut",
 ]

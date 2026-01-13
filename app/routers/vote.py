@@ -4,9 +4,19 @@ from fastapi import HTTPException, status, APIRouter, Depends
 
 from app.core import SessionDep, get_current_active_user
 from app.models import User, Vote, Post
-from app.schemas import VoteAction, VoteCreate, VoteResponse
+from app.schemas import VoteAction, VoteCreate, VoteResponse, VoteOut
+from typing import List
 
 router = APIRouter(prefix="/vote", tags=["Voting"])
+
+
+@router.get("/my-votes", response_model=List[VoteOut])
+async def get_my_votes(
+    db: SessionDep,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    votes = db.query(Vote).filter(Vote.user_id == current_user.id).all()
+    return votes
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=VoteResponse)

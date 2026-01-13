@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}My Posts - FastAPI Social Media{% endblock %}
+
+{% block content %}
+<div class="header-action-row" style="margin-bottom: 20px;">
+    <h1 class="page-title">My Posts</h1>
+</div>
+
+<div id="posts-container">
+    <div class="spinner"></div>
+</div>
+
+<div id="empty-state" class="empty-state hidden">
+    <div class="empty-state-icon">📝</div>
+    <div class="empty-state-text">No posts yet</div>
+    <div class="empty-state-subtext">You haven't created any posts. Start sharing your thoughts!</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Listen for global events
+document.addEventListener('voteCompleted', () => loadMyPosts());
+document.addEventListener('postDeleted', () => loadMyPosts());
+
+async function loadMyPosts() {
+    const token = getToken();
+    
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    try {
+        // Fetch posts and votes (to show correct vote status on own posts)
+        const [postsResponse, votesResponse] = await Promise.all([
+            apiRequest('/posts/me'),
+            apiRequest('/vote/my-votes')
+        ]);
+        
+        if (postsResponse.ok) {
+            const posts = await postsResponse.json();
+            
+            if (votesResponse.ok) {
+                const myVotes = await votesResponse.json();
+                window.userVotes.clear();
+                myVotes.forEach(v => {
+                    window.userVotes.set(v.post_id, v.type);
+                });
+            }
+            
+            renderPosts(posts, 'posts-container');
+        }
+    } catch (error) {
+        console.error(error);
+        showAlert('Failed to load posts', 'error');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadMyPosts();
+});
+</script>
+{% endblock %}

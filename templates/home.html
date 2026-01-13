@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Home - FastAPI Social Media{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search..."
+        id="search-input"
+        onkeyup="searchPosts()"
+    >
+</div>
+
+<!-- Inline Create Post Card -->
+<div class="card create-post-card" id="create-post-card">
+    <div class="create-post-header">
+        <label>Create New Post</label>
+    </div>
+    <div class="create-post-body">
+        <input type="text" id="new-post-title" class="form-control mb-2" placeholder="Title" />
+        <textarea id="new-post-content" class="form-control" rows="2" placeholder="What's on your mind?"></textarea>
+    </div>
+    <div class="create-post-footer" style="text-align: right; margin-top: 10px;">
+        <button class="btn btn-primary btn-sm" onclick="createPost()">Share</button>
+    </div>
+</div>
+
+<div id="posts-container">
+    <div class="spinner"></div>
+</div>
+
+<div id="empty-state" class="empty-state hidden">
+    <div class="empty-state-icon">📷</div>
+    <div class="empty-state-text">No Posts Yet</div>
+    <div class="empty-state-subtext">Start sharing moments with your friends</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allPosts = [];
+
+// Styling for inline create card
+const style = document.createElement('style');
+style.innerHTML = `
+    .create-post-card { padding: 16px; }
+    .form-control {
+        width: 100%; padding: 10px; border: 1px solid var(--border-color);
+        border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);
+        font-family: inherit; resize: none; outline: none;
+    }
+    .form-control:focus { background: var(--bg-primary); border-color: var(--text-secondary); }
+    .mb-2 { margin-bottom: 8px; }
+`;
+document.head.appendChild(style);
+
+// Listen for updates from Main.js logic
+document.addEventListener('voteCompleted', () => loadPosts());
+document.addEventListener('postDeleted', () => loadPosts());
+
+async function createPost() {
+    const title = document.getElementById('new-post-title').value;
+    const content = document.getElementById('new-post-content').value;
+    
+    if (!title || !content) {
+        showAlert('Please fill in both title and content', 'error');
+        return;
+    }
+    
+    try {
+        const response = await apiRequest('/posts', {
+            method: 'POST',
+            body: JSON.stringify({ title, content, published: true })
+        });
+        
+        if (response.ok) {
+            showAlert('Post shared successfully', 'success');
+            document.getElementById('new-post-title').value = '';
+            document.getElementById('new-post-content').value = '';
+            await loadPosts();
+        }
+    } catch (error) {
+        // handled
+    }
+}
+
+async function loadPosts() {
+    const token = getToken();
+    
+    if (!token) {
+        document.getElementById('posts-container').innerHTML = `
+            <div class="card" style="text-align: center; padding: 40px;">
+                <h3>Please login to view posts</h3>
+                <p style="color: var(--text-secondary); margin: 10px 0 20px;">You need to be logged in to see the posts feed.</p>
+                <a href="/login" class="btn btn-primary">Login</a>
+            </div>
+        `;
+        document.getElementById('create-post-card').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('create-post-card').style.display = 'block';
+    
+    try {
+        // Fetch posts and votes in parallel
+        const [postsResponse, votesResponse] = await Promise.all([
+            fetch('/posts', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('/vote/my-votes', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        
+        if (postsResponse.ok) {
+            allPosts = await postsResponse.json();
+            
+            if (votesResponse.ok) {
+                const myVotes = await votesResponse.json();
+                window.userVotes.clear();
+                myVotes.forEach(v => {
+                    window.userVotes.set(v.post_id, v.type);
+                });
+            }
+            
+            renderPosts(allPosts, 'posts-container');
+        } else if (postsResponse.status === 401) {
+            logout();
+        }
+    } catch (error) {
+        console.error(error);
+        showAlert('Failed to load posts', 'error');
+    }
+}
+
+function searchPosts() {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const filteredPosts = allPosts.filter(post => 
+        post.Post.title.toLowerCase().includes(searchTerm) || 
+        post.Post.content.toLowerCase().includes(searchTerm)
+    );
+    renderPosts(filteredPosts, 'posts-container');
+}
+
+// Load posts on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadPosts();
+});
+</script>
+{% endblock %}
