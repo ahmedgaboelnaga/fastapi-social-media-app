@@ -277,12 +277,28 @@ function createPostHTML(post, currentVote, isOwnPost) {
     const email = postData.owner ? postData.owner.email : 'Unknown';
     const initial = email.charAt(0).toUpperCase();
     
+    // Add visibility badge
+    const visibilityBadge = !postData.published ? 
+        `<span style="
+            background: #f3f4f6; 
+            color: #6b7280; 
+            padding: 2px 8px; 
+            border-radius: 9999px; 
+            font-size: 0.75rem; 
+            font-weight: 500;
+            margin-left: 0.5rem;
+            border: 1px solid #e5e7eb;
+        ">Hidden</span>` : '';
+
     return `
         <div class="post" data-post-id="${postData.id}">
             <div class="post-header">
                 <div class="post-avatar">${initial}</div>
                 <div class="post-user">
-                    <div class="post-username">${escapeHtml(email)}</div>
+                    <div style="display: flex; align-items: center;">
+                        <span class="post-username">${escapeHtml(email)}</span>
+                        ${visibilityBadge}
+                    </div>
                     <div class="post-time">${formatDate(postData.created_at)}</div>
                 </div>
                 ${isOwnPost ? `

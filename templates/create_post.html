@@ -33,6 +33,11 @@
                 ></textarea>
             </div>
 
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="published" name="published" checked style="width: auto;">
+                <label for="published" class="form-label" style="margin-bottom: 0;">Publish post immediately</label>
+            </div>
+
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn btn-primary">
                     ✓ Publish Post
@@ -65,7 +70,8 @@ async function handleCreatePost(event) {
     const formData = new FormData(event.target);
     const data = {
         title: formData.get('title'),
-        content: formData.get('content')
+        content: formData.get('content'),
+        published: document.getElementById('published').checked
     };
     
     const token = localStorage.getItem('access_token');

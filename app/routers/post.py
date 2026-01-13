@@ -24,6 +24,7 @@ async def get_posts(
         db.query(Post, func.count(Vote.type).label("votes"))
         .outerjoin(Vote, Vote.post_id == Post.id)
         .filter(Post.title.contains(search))
+        .filter(Post.published == True)
         .group_by(Post.id)
         .order_by(desc(Post.created_at))
         .limit(limit)
@@ -354,6 +355,13 @@ async def get_post(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Post with id: {post_id} was not found",
         )
+
+    if not post.Post.published and post.Post.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with id: {post_id} was not found",
+        )
+
     return post
 
 
@@ -364,14 +372,16 @@ async def get_user_posts(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     # return current_user.posts
-    posts = (
+    query = (
         db.query(Post, func.count(Vote.type).label("votes"))
         .outerjoin(Vote, Vote.post_id == Post.id)
         .filter(Post.owner_id == user_id)
-        .group_by(Post.id)
-        .order_by(desc(Post.created_at))
-        .all()
     )
+
+    if current_user.id != user_id:
+        query = query.filter(Post.published == True)
+
+    posts = query.group_by(Post.id).order_by(desc(Post.created_at)).all()
     return posts
 
 
