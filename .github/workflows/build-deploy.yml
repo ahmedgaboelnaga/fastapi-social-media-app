@@ -89,11 +89,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Install Heroku CLI # <- IMPORTANT!!! Make sure the cli is installed before using the action
-        run: |
-          curl https://cli-assets.heroku.com/install.sh | sh 
+      # - name: Install Heroku CLI # <- IMPORTANT!!! Make sure the cli is installed before using the action
+      #   run: |
+      #     curl https://cli-assets.heroku.com/install.sh | sh 
       # - uses: akhileshns/heroku-deploy@v3.14.15 # This is the action
       #   with:
       #     heroku_api_key: ${{secrets.HEROKU_API_KEY}}
       #     heroku_app_name: ${{secrets.HEROKU_APP_NAME}} #Must be unique in Heroku
       #     heroku_email: ${{secrets.HEROKU_EMAIL}}
+
+      # login to azure ubuntu server
+      - name: Deploy to Azure VM via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/azureuser/fastapi-app
+            git pull origin main
+            .venv/bin/alembic upgrade head
+            sudo systemctl restart fastapi-app
