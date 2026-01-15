@@ -108,18 +108,12 @@ jobs:
           script: |
             cd /home/azureuser/fastapi-app
 
-            # Create virtual environment if it doesn't exist
-            python3 -m venv .venv
+            git pull
 
-            # Activate venv
-            source .venv/bin/activate
-
-            # Upgrade pip and install requirements
-            pip install --upgrade pip
-            pip install -r requirements.txt
+            uv sync --frozen --no-cache --no-dev
 
             # Run migrations
-            alembic upgrade head
+            uv run alembic upgrade head
 
             # Restart the FastAPI service
             sudo systemctl restart fastapi-app
