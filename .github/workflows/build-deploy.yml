@@ -109,5 +109,5 @@ jobs:
             cd /home/azureuser/fastapi-app
             git pull origin main
             uv sync --locked --all-extras --no-dev
-            uv run alembic upgrade head
+            .venv/bin/alembic upgrade head
             sudo systemctl restart fastapi-app
