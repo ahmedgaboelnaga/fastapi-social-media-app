@@ -108,6 +108,6 @@ jobs:
           script: |
             cd /home/azureuser/fastapi-app
             git pull origin main
-            uv sync --locked --all-extras --no-dev
-            .venv/bin/alembic upgrade head
+            pip install -r requirements.txt
+            /home/azureuser/fastapi-app/.venv/bin/alembic upgrade head
             sudo systemctl restart fastapi-app
