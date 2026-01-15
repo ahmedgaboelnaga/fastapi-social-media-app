@@ -107,7 +107,19 @@ jobs:
           key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
           script: |
             cd /home/azureuser/fastapi-app
-            git pull origin main
+
+            # Create virtual environment if it doesn't exist
+            python3 -m venv .venv
+
+            # Activate venv
+            source .venv/bin/activate
+
+            # Upgrade pip and install requirements
+            pip install --upgrade pip
             pip install -r requirements.txt
-            /home/azureuser/fastapi-app/.venv/bin/alembic upgrade head
+
+            # Run migrations
+            alembic upgrade head
+
+            # Restart the FastAPI service
             sudo systemctl restart fastapi-app
