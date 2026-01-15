@@ -38,4 +38,4 @@ app.include_router(web.router)
 
 @app.get("/api")
 async def root() -> dict[str, str]:
-    return {"message": "Welcome to my API"}
+    return {"message": "This message was updated from the CI/CD pipeline!"}
